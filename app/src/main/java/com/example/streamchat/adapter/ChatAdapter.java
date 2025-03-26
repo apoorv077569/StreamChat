@@ -76,6 +76,8 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return chatMessages.size();
     }
 
+
+
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         private final LayoutSentMessageBinding binding;
 
