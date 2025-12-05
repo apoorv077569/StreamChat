@@ -77,37 +77,82 @@ public class SignupActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
+//    private void signup() {
+//        loading(true);
+//        FirebaseFirestore database = FirebaseFirestore.getInstance();
+//        RadioButton radioButton = findViewById(binding.radioGroup.getCheckedRadioButtonId());
+//        String gender = radioButton.getText().toString();
+//        HashMap<String, Object> user = new HashMap<>();
+//        user.put(Constants.KEY_NAME, binding.inputName.getText().toString());
+//        user.put(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
+//        user.put(Constants.KEY_PHONE, binding.inputPhone.getText().toString());
+//        user.put(Constants.KEY_PASSWORD, hashPassword(binding.inputPassword.getText().toString()));
+//        user.put(Constants.KEY_GENDER, gender);
+//        user.put(Constants.KEY_IMAGE, encodedImage);
+//        user.put(Constants.KEY_USER_ID, FirebaseAuth.getInstance().getUid());
+//        database.collection(Constants.KEY_COLLECTION_USERS)
+//                .add(user)
+//                .addOnSuccessListener(documentReference -> {
+//                    loading(false);
+//                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
+//                    preferenceManager.putString(Constants.KEY_USER_ID, documentReference.getId());
+//                    preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
+//                    preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
+//
+//                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                    startActivity(intent);
+//                })
+//                .addOnFailureListener(exception -> {
+//                    loading(false);
+//                    showToast(exception.getMessage());
+//                });
+//    }
+
     private void signup() {
         loading(true);
-        FirebaseFirestore database = FirebaseFirestore.getInstance();
         RadioButton radioButton = findViewById(binding.radioGroup.getCheckedRadioButtonId());
         String gender = radioButton.getText().toString();
-        HashMap<String, Object> user = new HashMap<>();
-        user.put(Constants.KEY_NAME, binding.inputName.getText().toString());
-        user.put(Constants.KEY_EMAIL, binding.inputEmail.getText().toString());
-        user.put(Constants.KEY_PHONE, binding.inputPhone.getText().toString());
-        user.put(Constants.KEY_PASSWORD, hashPassword(binding.inputPassword.getText().toString()));
-        user.put(Constants.KEY_GENDER, gender);
-        user.put(Constants.KEY_IMAGE, encodedImage);
-        user.put(Constants.KEY_USER_ID, FirebaseAuth.getInstance().getUid());
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .add(user)
-                .addOnSuccessListener(documentReference -> {
-                    loading(false);
-                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
-                    preferenceManager.putString(Constants.KEY_USER_ID, documentReference.getId());
-                    preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
-                    preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
+        String email = binding.inputEmail.getText().toString().trim();
+        String password = binding.inputPassword.getText().toString().trim();
 
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                })
-                .addOnFailureListener(exception -> {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+
+        auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
                     loading(false);
-                    showToast(exception.getMessage());
+                    if (task.isSuccessful() && auth.getCurrentUser() != null) {
+                        String userId = auth.getCurrentUser().getUid();
+                        FirebaseFirestore database = FirebaseFirestore.getInstance();
+
+                        HashMap<String, Object> user = new HashMap<>();
+                        user.put(Constants.KEY_USER_ID, userId);
+                        user.put(Constants.KEY_NAME, binding.inputName.getText().toString());
+                        user.put(Constants.KEY_EMAIL, email);
+                        user.put(Constants.KEY_PHONE, binding.inputPhone.getText().toString());
+                        user.put(Constants.KEY_GENDER, gender);
+                        user.put(Constants.KEY_IMAGE, encodedImage);
+
+                        database.collection(Constants.KEY_COLLECTION_USERS)
+                                .document(userId)
+                                .set(user)
+                                .addOnSuccessListener(unused -> {
+                                    preferenceManager.putBoolean(Constants.KEY_IS_SIGNED_IN, true);
+                                    preferenceManager.putString(Constants.KEY_USER_ID, userId);
+                                    preferenceManager.putString(Constants.KEY_NAME, binding.inputName.getText().toString());
+                                    preferenceManager.putString(Constants.KEY_IMAGE, encodedImage);
+
+                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                    startActivity(intent);
+                                })
+                                .addOnFailureListener(e -> showToast("Failed to save user: " + e.getMessage()));
+                    } else {
+                        showToast("Signup failed: " + task.getException().getMessage());
+                    }
                 });
     }
+
 
     private Boolean isValidSignUp() {
         if (encodedImage == null) {

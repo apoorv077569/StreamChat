@@ -19,6 +19,14 @@ import java.util.List;
 
 public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConversationAdapter.ConversionViewHolder> {
 
+    private final List<ChatMessages> chatMessages;
+    private final ConversionListener conversionListener;
+
+    public RecentConversationAdapter(List<ChatMessages> chatMessages, ConversionListener conversionListener) {
+        this.chatMessages = chatMessages;
+        this.conversionListener = conversionListener;
+    }
+
     @NonNull
     @Override
     public ConversionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -41,13 +49,6 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         return chatMessages.size();
     }
 
-    private final List<ChatMessages> chatMessages;
-    private final ConversionListener conversionListener;
-
-    public RecentConversationAdapter(List<ChatMessages> chatMessages, ConversionListener conversionListener) {
-        this.chatMessages = chatMessages;
-        this.conversionListener = conversionListener;
-    }
 
     class ConversionViewHolder extends RecyclerView.ViewHolder {
         ItemContainRecentConversationBinding binding;
@@ -58,9 +59,13 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         }
 
         void setData(ChatMessages chatMessages) {
-            binding.imgProfile.setImageBitmap(getConversationImage(chatMessages.ConversionImage));
+
+            // SAFE IMAGE DECODE
+            binding.imgProfile.setImageBitmap(safeDecodeImage(chatMessages.ConversionImage));
+
             binding.txtName.setText(chatMessages.conversionName);
             binding.txtRecentMessage.setText(chatMessages.message);
+
             binding.getRoot().setOnClickListener(view -> {
                 Users user = new Users();
                 user.id = chatMessages.conversionId;
@@ -70,13 +75,27 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
             });
         }
 
-        private Bitmap getConversationImage(String encodedImage) {
-            if (encodedImage != null && !encodedImage.isEmpty()) {
+        private Bitmap safeDecodeImage(String encodedImage) {
+            try {
+                if (encodedImage == null ||
+                        encodedImage.trim().isEmpty() ||
+                        encodedImage.equals("null") ||
+                        encodedImage.equals("undefined")) {
+
+                    return BitmapFactory.decodeResource(
+                            binding.getRoot().getResources(),
+                            R.drawable.default_profile
+                    );
+                }
+
                 byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
                 return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            } else {
-                // Return a default bitmap if the image is null or empty
-                return BitmapFactory.decodeResource(binding.getRoot().getResources(), R.drawable.default_profile);
+
+            } catch (Exception e) {
+                return BitmapFactory.decodeResource(
+                        binding.getRoot().getResources(),
+                        R.drawable.default_profile
+                );
             }
         }
     }

@@ -13,6 +13,8 @@ import com.example.streamchat.utills.Constants;
 import com.example.streamchat.utills.PreferenceManager;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.auth.FirebaseAuth;
+
 
 public class SigninActivity extends AppCompatActivity {
 
@@ -40,21 +42,56 @@ public class SigninActivity extends AppCompatActivity {
         });
     }
 
+//    private void signIn() {
+//        loading(true);
+//        FirebaseFirestore database = FirebaseFirestore.getInstance();
+//        database.collection(Constants.KEY_COLLECTION_USERS)
+//                .whereEqualTo(Constants.KEY_EMAIL, binding.inputEmail.getText().toString().trim())
+//                .whereEqualTo(Constants.KEY_PASSWORD, binding.inputPassword.getText().toString().trim())
+//                .get()
+//                .addOnCompleteListener(task -> {
+//                    loading(false);
+//                    if (task.isSuccessful() && task.getResult() != null && !task.getResult().getDocuments().isEmpty()) {
+//                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
+//                        saveUserPreferences(documentSnapshot);
+//                        navigateToMainActivity();
+//                    } else {
+//                        showToast("Unable to sign in. Check your credentials.");
+//                    }
+//                })
+//                .addOnFailureListener(e -> {
+//                    loading(false);
+//                    showToast("Sign-in failed: " + e.getMessage());
+//                });
+//    }
+
     private void signIn() {
         loading(true);
+        String email = binding.inputEmail.getText().toString().trim();
+        String password = binding.inputPassword.getText().toString().trim();
+
+        FirebaseAuth auth = FirebaseAuth.getInstance();
         FirebaseFirestore database = FirebaseFirestore.getInstance();
-        database.collection(Constants.KEY_COLLECTION_USERS)
-                .whereEqualTo(Constants.KEY_EMAIL, binding.inputEmail.getText().toString().trim())
-                .whereEqualTo(Constants.KEY_PASSWORD, binding.inputPassword.getText().toString().trim())
-                .get()
+
+        auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     loading(false);
-                    if (task.isSuccessful() && task.getResult() != null && !task.getResult().getDocuments().isEmpty()) {
-                        DocumentSnapshot documentSnapshot = task.getResult().getDocuments().get(0);
-                        saveUserPreferences(documentSnapshot);
-                        navigateToMainActivity();
+                    if (task.isSuccessful() && auth.getCurrentUser() != null) {
+                        String userId = auth.getCurrentUser().getUid();
+                        database.collection(Constants.KEY_COLLECTION_USERS)
+                                .document(userId)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    if (documentSnapshot.exists()) {
+                                        saveUserPreferences(documentSnapshot);
+                                        navigateToMainActivity();
+                                    } else {
+                                        showToast("User data not found.");
+                                    }
+                                })
+                                .addOnFailureListener(e -> showToast("Failed to fetch user data: " + e.getMessage()));
                     } else {
-                        showToast("Unable to sign in. Check your credentials.");
+                        showToast("Invalid credentials. Please try again.");
                     }
                 })
                 .addOnFailureListener(e -> {

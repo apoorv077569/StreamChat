@@ -1,8 +1,11 @@
 package com.example.streamchat.activities;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.view.View;
@@ -42,17 +45,42 @@ public class MainActivity extends BaseActivity implements ConversionListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        preferenceManager = new PreferenceManager(getApplicationContext());
+
+        // 🔥 USER NOT LOGGED IN → redirect to SigninActivity
+        if (preferenceManager.getString(Constants.KEY_USER_ID) == null ||
+                preferenceManager.getString(Constants.KEY_USER_ID).isEmpty()) {
+
+            Intent intent = new Intent(MainActivity.this, SigninActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
+        // Only continue when user is logged in
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         initialize();
         loadUserDetails();
         setListeners();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "chat_channel", "Chat Notifications", NotificationManager.IMPORTANCE_HIGH
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+
         try {
             listenToConversations();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
         fetchToken();
     }
 
@@ -88,12 +116,17 @@ public class MainActivity extends BaseActivity implements ConversionListener {
 
     private void displayProfileImage(String encodedImage) {
         try {
+            if (encodedImage == null || encodedImage.trim().isEmpty() || encodedImage.equals("undefined")) {
+                binding.imgProfile.setImageResource(R.drawable.default_profile);
+                return;
+            }
+
             byte[] bytes = Base64.decode(encodedImage, Base64.DEFAULT);
             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             binding.imgProfile.setImageBitmap(bitmap);
-        } catch (IllegalArgumentException e) {
+
+        } catch (Exception e) {
             binding.imgProfile.setImageResource(R.drawable.default_profile);
-            showToast("Invalid image format");
         }
     }
 

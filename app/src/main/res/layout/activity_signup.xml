@@ -1,59 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clipToPadding="false"
-    android:padding="@dimen/_24sdp"
-    android:scrollbars="none"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="24dp"
+    android:paddingBottom="24dp"
     tools:context=".activities.SignupActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <ImageView
-            android:layout_width="@dimen/_25sdp"
-            android:layout_height="@dimen/_25sdp"
-            android:layout_marginTop="@dimen/_10sdp"
-            android:contentDescription="@string/add_image"
-            android:src="@drawable/logo" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_20sdp"
-            android:text="@string/create_a_new_account"
-            android:textColor="@color/primary_text"
-            android:textSize="@dimen/_18ssp"
-            android:textStyle="bold" />
-
-        <FrameLayout
-            android:id="@+id/layoutImage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_20sdp">
-
-            <com.makeramen.roundedimageview.RoundedImageView
-                android:id="@+id/imgProfile"
-                android:layout_width="@dimen/_80sdp"
-                android:layout_height="@dimen/_80sdp"
-                android:background="@drawable/background_image"
-                android:scaleType="centerCrop"
-                app:riv_oval="true" />
-
-            <TextView
-                android:id="@+id/txtAddImage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/add_image"
-                android:textColor="@color/secondary_text"
-                android:textSize="@dimen/_10ssp" />
-        </FrameLayout>
+    <!-- Enable scroll safely -->
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -61,149 +30,188 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
+            <!-- APP LOGO -->
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="16dp"
+                android:src="@drawable/logo"
+                android:contentDescription="@string/add_image" />
+
+            <!-- TITLE -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/create_a_new_account"
+                android:textColor="@color/primary_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <!-- PROFILE IMAGE PICKER -->
+            <FrameLayout
+                android:id="@+id/layoutImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp">
+
+                <com.makeramen.roundedimageview.RoundedImageView
+                    android:id="@+id/imgProfile"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@drawable/background_image"
+                    android:scaleType="centerCrop"
+                    app:riv_oval="true" />
+
+                <TextView
+                    android:id="@+id/txtAddImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/add_image"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="12sp" />
+            </FrameLayout>
+
+            <!-- NAME -->
             <EditText
                 android:id="@+id/inputName"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_marginTop="@dimen/_20sdp"
+                android:layout_height="48dp"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/background_input"
                 android:drawableStart="@drawable/name"
-                android:drawablePadding="@dimen/_16sdp"
+                android:drawablePadding="16dp"
                 android:hint="@string/name"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
-                android:inputType="textPersonName"
-                android:paddingStart="@dimen/_16sdp"
-                android:paddingEnd="@dimen/_16sdp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13ssp" />
+                android:textSize="14sp" />
 
+            <!-- EMAIL -->
             <EditText
                 android:id="@+id/inputEmail"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/background_input"
                 android:drawableStart="@drawable/email"
-                android:drawablePadding="@dimen/_16sdp"
+                android:drawablePadding="16dp"
                 android:hint="@string/email"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:inputType="textEmailAddress"
-                android:paddingStart="@dimen/_16sdp"
-                android:paddingEnd="@dimen/_16sdp"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13ssp" />
+                android:textSize="14sp" />
 
+            <!-- PHONE -->
             <EditText
                 android:id="@+id/inputPhone"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/background_input"
                 android:drawableStart="@drawable/phone"
-                android:drawablePadding="@dimen/_16sdp"
+                android:drawablePadding="16dp"
                 android:hint="@string/phone"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
                 android:inputType="phone"
-                android:paddingStart="@dimen/_16sdp"
-                android:paddingEnd="@dimen/_16sdp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13ssp" />
+                android:textSize="14sp" />
 
+            <!-- PASSWORD -->
             <EditText
                 android:id="@+id/inputPassword"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/background_input"
                 android:drawableStart="@drawable/lock"
-                android:drawablePadding="@dimen/_16sdp"
+                android:drawablePadding="16dp"
                 android:hint="@string/password"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
                 android:inputType="textPassword"
-                android:paddingStart="@dimen/_16sdp"
-                android:paddingEnd="@dimen/_16sdp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13ssp" />
+                android:textSize="14sp" />
 
+            <!-- CONFIRM PASSWORD -->
             <EditText
                 android:id="@+id/inputConfirmPassword"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/_45sdp"
-                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/background_input"
                 android:drawableStart="@drawable/lock"
-                android:drawablePadding="@dimen/_16sdp"
+                android:drawablePadding="16dp"
                 android:hint="@string/confirm_password"
-                android:imeOptions="actionNext"
-                android:importantForAutofill="no"
                 android:inputType="textPassword"
-                android:paddingStart="@dimen/_16sdp"
-                android:paddingEnd="@dimen/_16sdp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textColor="@color/primary_text"
-                android:textSize="@dimen/_13ssp" />
+                android:textSize="14sp" />
 
+            <!-- RADIO BUTTONS -->
             <RadioGroup
                 android:id="@+id/radioGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:orientation="horizontal">
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
 
                 <RadioButton
                     android:id="@+id/male"
-                    android:layout_width="@dimen/_100sdp"
-                    android:layout_height="@dimen/_30sdp"
-                    android:text="@string/male"
-                    tools:ignore="TouchTargetSizeCheck" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/male" />
 
                 <RadioButton
                     android:id="@+id/female"
-                    android:layout_width="@dimen/_100sdp"
-                    android:layout_height="@dimen/_30sdp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="@string/female"
-                    tools:ignore="TouchTargetSizeCheck" />
-
+                    android:layout_marginStart="32dp" />
             </RadioGroup>
 
+            <!-- SIGNUP BUTTON -->
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_16sdp"
+                android:layout_marginTop="20dp"
                 android:animateLayoutChanges="true">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSignup"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/_50sdp"
-                    android:layout_marginTop="@dimen/_15sdp"
+                    android:layout_height="48dp"
                     android:text="@string/sign_up"
                     android:textColor="@color/white"
-                    android:textSize="@dimen/_13ssp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
-                    app:cornerRadius="@dimen/_8sdp"
-                    tools:ignore="VisualLintButtonSize" />
+                    app:cornerRadius="12dp"
+                    android:backgroundTint="@color/primary" />
 
                 <ProgressBar
                     android:id="@+id/progressBar"
-                    android:layout_width="@dimen/_25sdp"
-                    android:layout_height="@dimen/_25sdp"
                     android:layout_gravity="center"
-                    android:visibility="invisible" />
+                    android:visibility="gone"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp" />
             </FrameLayout>
 
+            <!-- GO TO LOGIN -->
             <TextView
                 android:id="@+id/txtSignin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_30sdp"
+                android:layout_marginTop="24dp"
                 android:text="@string/already_have_an_accunt"
                 android:textColor="@color/primary"
-                android:textSize="@dimen/_13ssp" />
-        </LinearLayout>
+                android:textSize="14sp" />
 
-    </LinearLayout>
-</ScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

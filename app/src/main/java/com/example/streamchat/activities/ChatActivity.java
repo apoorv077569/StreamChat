@@ -4,12 +4,15 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 
 import com.example.streamchat.R;
 import com.example.streamchat.adapter.ChatAdapter;
+import com.example.streamchat.apiservices.ApiClient;
+import com.example.streamchat.apiservices.NotificationApi;
 import com.example.streamchat.databinding.ActivityChatBinding;
 import com.example.streamchat.modals.ChatMessages;
 import com.example.streamchat.modals.Users;
@@ -31,9 +34,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.crypto.SecretKey;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatActivity extends BaseActivity {
 
@@ -60,13 +68,44 @@ public class ChatActivity extends BaseActivity {
     }
 
     private void loadReceiverDetail() {
+
         receiverUser = (Users) getIntent().getSerializableExtra(Constants.KEY_USER);
+
+        // -------- CASE 1: OPENED NORMALLY --------
         if (receiverUser != null) {
             binding.txtName.setText(receiverUser.name);
-        } else {
-            // Handle case where receiverUser is null
-            finish();
+            return;
         }
+
+        // -------- CASE 2: OPENED FROM NOTIFICATION --------
+        String id = getIntent().getStringExtra("senderId");
+        if (id == null) {
+            finish();
+            return;
+        }
+
+        FirebaseFirestore.getInstance()
+                .collection(Constants.KEY_COLLECTION_USERS)
+                .document(id)
+                .get()
+                .addOnSuccessListener(doc -> {
+
+                    receiverUser = new Users();
+                    receiverUser.id = id;
+                    receiverUser.name = doc.getString(Constants.KEY_NAME);
+                    receiverUser.image = doc.getString(Constants.KEY_IMAGE);
+                    receiverUser.token = doc.getString(Constants.KEY_FCM_TOKEN);
+
+                    binding.txtName.setText(receiverUser.name);
+
+                    // 🔥 Update ChatAdapter with real photo
+                    if (chatAdapter != null) {
+                        chatAdapter.setReceiverProfileImage(
+                                getBitmapEncodedString(receiverUser.image)
+                        );
+                        chatAdapter.notifyDataSetChanged();
+                    }
+                });
     }
 
     private void init() {
@@ -141,7 +180,9 @@ private void sendMessage() {
         messageMap.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
         messageMap.put(Constants.KEY_MESSAGE, encryptedMessage);
         messageMap.put(Constants.KEY_TIMESTAMP, new Date());
-        database.collection(Constants.KEY_COLLECTION_CHAT).add(messageMap);
+        database.collection(Constants.KEY_COLLECTION_CHAT).add(messageMap).addOnSuccessListener(documentReference -> {
+                sendPushNotification(receiverUser.token,preferenceManager.getString(Constants.KEY_NAME),message);
+        });
 
         // Handle conversation update
         if (conversionId != null) {
@@ -150,7 +191,7 @@ private void sendMessage() {
             HashMap<String, Object> conversion = new HashMap<>();
             conversion.put(Constants.KEY_SENDER_ID, preferenceManager.getString(Constants.KEY_USER_ID));
             conversion.put(Constants.KEY_SENDER_NAME, preferenceManager.getString(Constants.KEY_NAME));
-            conversion.put(Constants.KEY_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
+            conversion.put(Constants.KEY_SENDER_IMAGE, preferenceManager.getString(Constants.KEY_IMAGE));
             conversion.put(Constants.KEY_RECEIVER_ID, receiverUser.id);
             conversion.put(Constants.KEY_RECEIVER_NAME, receiverUser.name);
             conversion.put(Constants.KEY_RECEIVER_IMAGE, receiverUser.image);
@@ -191,37 +232,6 @@ private void sendMessage() {
                 }));
     }
 
-//    private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
-//        if (error != null) {
-//            return;
-//        }
-//        if (value != null) {
-//            int count = chatMessages.size();
-//            for (DocumentChange documentChange : value.getDocumentChanges()) {
-//                ChatMessages chatMessage = new ChatMessages();
-//                if (documentChange.getType() == DocumentChange.Type.ADDED) {
-//                    chatMessage.senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-//                    chatMessage.receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
-//                    chatMessage.message = documentChange.getDocument().getString(Constants.KEY_MESSAGE);
-//                    chatMessage.dateTime = getReadableDate(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
-//                    chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
-//                    chatMessages.add(chatMessage);
-//                }
-//            }
-//            Collections.sort(chatMessages, (obj1, obj2) -> obj1.dateObject.compareTo(obj2.dateObject));
-//            if (count == 0) {
-//                chatAdapter.notifyDataSetChanged();
-//            } else {
-//                chatAdapter.notifyItemRangeInserted(chatMessages.size(), chatMessages.size());
-//                binding.chatRecyclerView.smoothScrollToPosition(chatMessages.size() - 1);
-//            }
-//            binding.chatRecyclerView.setVisibility(View.VISIBLE);
-//        }
-//        binding.progressBar.setVisibility(View.GONE);
-//        if (conversionId == null) {
-//            checkForConversion();
-//        }
-//    };
 private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
     if (error != null) {
         return;
@@ -242,6 +252,8 @@ private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
                     chatMessage.dateTime = getReadableDate(documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP));
                     chatMessage.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
                     chatMessages.add(chatMessage);
+
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -305,6 +317,37 @@ private final EventListener<QuerySnapshot> eventListener = (value, error) -> {
 
     private String getReadableDate(Date date) {
         return new SimpleDateFormat("MMMM dd, yyyy - hh:mm a", Locale.getDefault()).format(date);
+    }
+
+
+    private void sendPushNotification(String receiverToken,String title,String bodyText){
+        NotificationApi api = ApiClient.getClient().create(NotificationApi.class);
+        Map<String, Object> data = new HashMap<>();
+        data.put("senderId", preferenceManager.getString(Constants.KEY_USER_ID));
+        data.put("type", "chat");
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("receiverToken", receiverToken);
+        requestBody.put("title", title);
+        requestBody.put("body", bodyText);
+        requestBody.put("data", data);
+
+        api.sendNotification("mySuperSecretKey12345", requestBody)
+                .enqueue(new Callback<Map<String, Object>>() {
+                    @Override
+                    public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                        Log.d("FCM", "Notification API Returned: " + response.code()+" "+response.body());
+                        Log.d("FCM", "Reciever's FCM Token: " + receiverToken);
+                        Log.d("FCM", "Body : " + bodyText);
+                        Log.d("FCM", "Data: " + data);
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                        Log.e("FCM", "Failure: " + t.getMessage());
+                    }
+                });
     }
 
     @Override

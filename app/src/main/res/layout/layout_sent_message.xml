@@ -4,8 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_8sdp"
-    android:padding="@dimen/_4sdp">
+    android:padding="@dimen/_4sdp"
+    android:animateLayoutChanges="true">
 
+    <!-- MESSAGE BUBBLE -->
     <TextView
         android:id="@+id/txtMessage"
         android:layout_width="0dp"
@@ -17,20 +19,20 @@
         android:paddingEnd="@dimen/_12sdp"
         android:paddingBottom="@dimen/_8sdp"
         android:textColor="@color/white"
+        android:maxWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="wrap"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintWidth_percent="0.75" />
 
-
+    <!-- DATE / TIME -->
     <TextView
         android:id="@+id/txtDateTime"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_4sdp"
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/txtMessage"
         app:layout_constraintTop_toBottomOf="@id/txtMessage" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
