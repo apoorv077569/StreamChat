@@ -40,6 +40,9 @@ public class SigninActivity extends AppCompatActivity {
                 signIn();
             }
         });
+        binding.txtForget.setOnClickListener(v ->
+                startActivity(new Intent(this, ResetPasswordActivity.class)));
+
     }
 
 //    private void signIn() {

@@ -20,15 +20,17 @@
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.StreamChat"
         tools:targetApi="31">
+        <activity
+            android:name=".activities.ResetPasswordActivity"
+            android:exported="false" />
 
         <service
             android:name=".firebase.MessagingService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
 
         <activity
             android:name=".activities.ProfileActivity"
@@ -61,7 +63,6 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".activities.MainActivity" />
-
     </application>
 
 </manifest>
