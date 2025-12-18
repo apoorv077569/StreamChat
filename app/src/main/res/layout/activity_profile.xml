@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/primary"
-    tools:context=".activities.MainActivity">
+    tools:context=".activities.ProfileActivity">
 
     <!-- BACK BUTTON -->
     <ImageView
@@ -46,7 +46,7 @@
         android:background="@drawable/icon_background"
         android:padding="6dp"
         android:src="@drawable/logout"
-        android:tint="@color/white"
+        app:tint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/imgBack" />
 

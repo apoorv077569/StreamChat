@@ -8,10 +8,18 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:allowBackup="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@drawable/logo"
@@ -23,10 +31,16 @@
         <activity
             android:name=".activities.ResetPasswordActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.OtpVerificationActivity"
+            android:exported="true" />
+        <activity
+            android:name=".activities.SendOtpActivity"
+            android:exported="true" />
 
         <service
             android:name=".firebase.MessagingService"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -34,17 +48,17 @@
 
         <activity
             android:name=".activities.ProfileActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activities.BaseActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activities.ChatActivity"
-            android:exported="false"
+            android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.UsersActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".activities.SplashActivity"
             android:exported="true"
@@ -60,7 +74,7 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.SigninActivity"
-            android:exported="false"
+            android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity android:name=".activities.MainActivity" />
     </application>

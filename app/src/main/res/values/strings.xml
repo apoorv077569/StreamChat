@@ -45,4 +45,10 @@
     <string name="re_enter_new_password">Re Enter new password</string>
     <string name="reset_password_for">Reset Password for</string>
     <string name="forgot_password">Forgot Password?</string>
+    <string name="verify">Verify</string>
+    <string name="we_just_sent_an_sms">We just sent an SMS</string>
+    <string name="didn_t_receive_code_resend_00_56">Didn’t receive code?</string>
+    <string name="resend_00_56">Resend – 00:56</string>
+    <string name="enter_the_security_code_we_sent_to">Enter the security code we sent to</string>
+    <string name="example_gmail_com">example@gmail.com</string>
 </resources>

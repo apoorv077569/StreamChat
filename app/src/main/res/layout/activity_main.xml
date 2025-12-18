@@ -72,7 +72,7 @@
             android:padding="20dp"
             android:overScrollMode="never"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_container_recent_conversation"
+            tools:listitem="@layout/item_contain_recent_conversation"
             android:visibility="gone" />
 
         <ProgressBar

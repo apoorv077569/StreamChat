@@ -1,38 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_8sdp"
-    android:padding="@dimen/_4sdp"
-    android:animateLayoutChanges="true">
+    android:padding="@dimen/_4sdp">
 
-    <!-- MESSAGE BUBBLE -->
-    <TextView
-        android:id="@+id/txtMessage"
+    <!-- ================= MESSAGE BUBBLE ================= -->
+    <LinearLayout
+        android:id="@+id/messageContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:background="@drawable/background_sent_messages"
         android:padding="@dimen/_12sdp"
-        android:paddingStart="@dimen/_12sdp"
-        android:paddingTop="@dimen/_8sdp"
-        android:paddingEnd="@dimen/_12sdp"
-        android:paddingBottom="@dimen/_8sdp"
-        android:textColor="@color/white"
-        android:maxWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.75" />
+        app:layout_constraintWidth_percent="0.75">
+        <ProgressBar
+            android:id="@+id/progressMedia"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
 
-    <!-- DATE / TIME -->
+        <!-- TEXT -->
+        <TextView
+            android:id="@+id/txtMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:visibility="gone"/>
+
+        <!-- IMAGE -->
+        <ImageView
+            android:id="@+id/imgMedia"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/>
+
+        <!-- FILE -->
+        <LinearLayout
+            android:id="@+id/layoutFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/baseline_attach_file_24"
+                app:tint="@color/white"/>
+
+            <TextView
+                android:id="@+id/txtFileName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Open File"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ================= DATE / TIME (BELOW BUBBLE) ================= -->
     <TextView
         android:id="@+id/txtDateTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_4sdp"
+        android:layout_marginTop="4dp"
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
-        app:layout_constraintEnd_toEndOf="@id/txtMessage"
-        app:layout_constraintTop_toBottomOf="@id/txtMessage" />
+        app:layout_constraintTop_toBottomOf="@id/messageContainer"
+        app:layout_constraintEnd_toEndOf="@id/messageContainer"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -41,7 +41,7 @@ public class SigninActivity extends AppCompatActivity {
             }
         });
         binding.txtForget.setOnClickListener(v ->
-                startActivity(new Intent(this, ResetPasswordActivity.class)));
+                startActivity(new Intent(this, SendOtpActivity.class)));
 
     }
 

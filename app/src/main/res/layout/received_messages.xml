@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_8sdp"
     android:padding="@dimen/_4sdp"
@@ -18,27 +19,64 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Received Message Bubble -->
+    <!-- TEXT MESSAGE -->
     <TextView
         android:id="@+id/txtMessage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_6sdp"
-        android:layout_marginEnd="@dimen/_6sdp"
         android:background="@drawable/background_received_messages"
-        android:paddingStart="@dimen/_12sdp"
-        android:paddingTop="@dimen/_8sdp"
-        android:paddingEnd="@dimen/_12sdp"
-        android:paddingBottom="@dimen/_8sdp"
+        android:padding="@dimen/_12sdp"
         android:textColor="@color/white"
         android:textSize="@dimen/_13ssp"
-        android:maxWidth="0dp"
-        app:layout_constraintWidth_percent="0.75"
+        android:visibility="gone"
         app:layout_constraintStart_toEndOf="@id/imgProfile"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintWidth_percent="0.75" />
 
-    <!-- Date / Time -->
+    <!-- IMAGE MESSAGE -->
+    <ImageView
+        android:id="@+id/imgMedia"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:scaleType="centerCrop"
+        android:background="@drawable/background_received_messages"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/imgProfile"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.75" />
+
+    <!-- FILE (PDF / DOC / ZIP) -->
+    <LinearLayout
+        android:id="@+id/layoutFile"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_6sdp"
+        android:orientation="horizontal"
+        android:padding="@dimen/_12sdp"
+        android:background="@drawable/background_received_messages"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/imgProfile"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.75">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/baseline_attach_file_24"
+            app:tint="@color/white"/>
+
+        <TextView
+            android:id="@+id/txtFileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="File"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+
+    <!-- DATE / TIME -->
     <TextView
         android:id="@+id/txtDateTime"
         android:layout_width="wrap_content"

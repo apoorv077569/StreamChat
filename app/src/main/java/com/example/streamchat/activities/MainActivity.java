@@ -1,16 +1,25 @@
 package com.example.streamchat.activities;
 
+import android.Manifest;
+import android.app.AlertDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.firebase.auth.FirebaseAuth;
 import com.example.streamchat.R;
 import com.example.streamchat.adapter.RecentConversationAdapter;
 import com.example.streamchat.databinding.ActivityMainBinding;
@@ -82,6 +91,50 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         }
 
         fetchToken();
+        printIdToken();
+        checkNotificationPermission();
+    }
+
+    private void checkNotificationPermission(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+            )!= PackageManager.PERMISSION_GRANTED) {
+                showNotificationPermissionDialog();
+            }
+        }
+    }
+
+    private void showNotificationPermissionDialog(){
+        new AlertDialog.Builder(this)
+                .setTitle("Enable Notifications")
+                .setMessage("Allow notifications so you don't miss messages.")
+                .setCancelable(false)
+                .setPositiveButton("Allow",((dialog, which) -> {
+                    ActivityCompat.requestPermissions(
+                            this,
+                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                            101
+                    );
+                }))
+                .setNegativeButton("Not Now",((dialog, which) -> dialog.dismiss()))
+                .show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 101){
+            if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ){
+                showToast("Permission Granted");
+            }else{
+                showToast("Permission Denied");
+            }
+        }
     }
 
     private void initialize() {
@@ -170,7 +223,8 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         }
     }
 
-    private ChatMessages createChatMessage(DocumentChange documentChange, SecretKey key) {
+    @NonNull
+    private ChatMessages createChatMessage(@NonNull DocumentChange documentChange, SecretKey key) {
         ChatMessages chatMessages = new ChatMessages();
         String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
         String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
@@ -198,7 +252,7 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         return chatMessages;
     }
 
-    private void updateConversationList(ChatMessages chatMessages, DocumentChange documentChange) {
+    private void updateConversationList(ChatMessages chatMessages, @NonNull DocumentChange documentChange) {
         if (documentChange.getType() == DocumentChange.Type.ADDED) {
             conversations.add(chatMessages);
         } else if (documentChange.getType() == DocumentChange.Type.MODIFIED) {
@@ -225,6 +279,25 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken)
                 .addOnFailureListener(e -> showToast("Failed to fetch token: " + e.getMessage()));
     }
+    private void printIdToken() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            Log.e("ID_TOKEN", "User not logged in");
+            return;
+        }
+
+        FirebaseAuth.getInstance()
+                .getCurrentUser()
+                .getIdToken(true)
+                .addOnSuccessListener(result -> {
+                    String idToken = result.getToken();
+                    Log.d("ID_TOKEN: ", idToken);
+
+                })
+                .addOnFailureListener(e ->
+                        Log.e("ID_TOKEN", "Failed to get token", e)
+                );
+    }
+
 
     private void updateToken(String token) {
         String userId = preferenceManager.getString(Constants.KEY_USER_ID);
