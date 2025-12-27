@@ -2,13 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/_8sdp"
-    android:padding="@dimen/_4sdp"
-    android:animateLayoutChanges="true">
+    android:padding="@dimen/_4sdp">
 
-    <!-- Profile Photo -->
+    <!-- ================= PROFILE IMAGE ================= -->
     <com.makeramen.roundedimageview.RoundedImageView
         android:id="@+id/imgProfile"
         android:layout_width="@dimen/_28sdp"
@@ -17,74 +16,80 @@
         android:scaleType="centerCrop"
         app:riv_oval="true"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
-    <!-- TEXT MESSAGE -->
-    <TextView
-        android:id="@+id/txtMessage"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_6sdp"
-        android:background="@drawable/background_received_messages"
-        android:padding="@dimen/_12sdp"
-        android:textColor="@color/white"
-        android:textSize="@dimen/_13ssp"
-        android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/imgProfile"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.75" />
-
-    <!-- IMAGE MESSAGE -->
-    <ImageView
-        android:id="@+id/imgMedia"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginStart="@dimen/_6sdp"
-        android:scaleType="centerCrop"
-        android:background="@drawable/background_received_messages"
-        android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/imgProfile"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.75" />
-
-    <!-- FILE (PDF / DOC / ZIP) -->
+    <!-- ================= MESSAGE BUBBLE ================= -->
     <LinearLayout
-        android:id="@+id/layoutFile"
+        android:id="@+id/messageContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_6sdp"
-        android:orientation="horizontal"
-        android:padding="@dimen/_12sdp"
+        android:orientation="vertical"
         android:background="@drawable/background_received_messages"
-        android:visibility="gone"
+        android:padding="@dimen/_12sdp"
+        android:layout_marginStart="@dimen/_6sdp"
         app:layout_constraintStart_toEndOf="@id/imgProfile"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.75">
 
-        <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/baseline_attach_file_24"
-            app:tint="@color/white"/>
+        <!-- PROGRESS -->
+        <ProgressBar
+            android:id="@+id/progressMessage"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:visibility="gone"/>
 
+        <!-- TEXT -->
         <TextView
-            android:id="@+id/txtFileName"
+            android:id="@+id/txtMessage"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="File"
-            android:textColor="@color/white"/>
+            android:textColor="@color/white"
+            android:textSize="@dimen/_13ssp"
+            android:visibility="gone"/>
+
+        <!-- IMAGE -->
+        <ImageView
+            android:id="@+id/imgMedia"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/>
+
+        <!-- FILE -->
+        <LinearLayout
+            android:id="@+id/layoutFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/baseline_attach_file_24"
+                app:tint="@color/white"/>
+
+            <TextView
+                android:id="@+id/txtFileName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Open File"
+                android:textColor="@color/white"/>
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- DATE / TIME -->
+    <!-- ================= DATE / TIME ================= -->
     <TextView
         android:id="@+id/txtDateTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_4sdp"
+        android:layout_marginTop="4dp"
         android:textColor="@color/secondary_text"
         android:textSize="@dimen/_8ssp"
-        app:layout_constraintStart_toStartOf="@id/txtMessage"
-        app:layout_constraintTop_toBottomOf="@id/txtMessage" />
+        app:layout_constraintTop_toBottomOf="@id/messageContainer"
+        app:layout_constraintStart_toStartOf="@id/messageContainer"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

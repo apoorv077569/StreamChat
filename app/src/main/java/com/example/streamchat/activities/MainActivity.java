@@ -61,7 +61,7 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         if (preferenceManager.getString(Constants.KEY_USER_ID) == null ||
                 preferenceManager.getString(Constants.KEY_USER_ID).isEmpty()) {
 
-            Intent intent = new Intent(MainActivity.this, SigninActivity.class);
+            Intent intent = new Intent(this, SigninActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
@@ -105,7 +105,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             }
         }
     }
-
     private void showNotificationPermissionDialog(){
         new AlertDialog.Builder(this)
                 .setTitle("Enable Notifications")
@@ -136,7 +135,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             }
         }
     }
-
     private void initialize() {
         preferenceManager = new PreferenceManager(getApplicationContext());
         conversations = new ArrayList<>();
@@ -144,17 +142,14 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         binding.conversationRecyclerView.setAdapter(conversationAdapter);
         database = FirebaseFirestore.getInstance();
     }
-
     private void setListeners() {
         binding.imgSignout.setOnClickListener(view -> signOut());
         binding.addUser.setOnClickListener(view -> navigateTo(UsersActivity.class));
         binding.imgProfile.setOnClickListener(view -> navigateTo(ProfileActivity.class));
     }
-
     private void navigateTo(Class<?> activityClass) {
         startActivity(new Intent(getApplicationContext(), activityClass));
     }
-
     private void loadUserDetails() {
         String userName = preferenceManager.getString(Constants.KEY_NAME);
         binding.txtName.setText(userName != null && !userName.isEmpty() ? userName : "Unknown User");
@@ -166,7 +161,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             binding.imgProfile.setImageResource(R.drawable.default_profile);
         }
     }
-
     private void displayProfileImage(String encodedImage) {
         try {
             if (encodedImage == null || encodedImage.trim().isEmpty() || encodedImage.equals("undefined")) {
@@ -182,11 +176,9 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             binding.imgProfile.setImageResource(R.drawable.default_profile);
         }
     }
-
     private void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
-
     private void listenToConversations() throws Exception {
         SecretKey key = EncryptionUtil.generateKey("your_secure_password"); // Replace with your actual key/password
         EventListener<QuerySnapshot> eventListener = (value, error) -> {
@@ -207,7 +199,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
                 .whereEqualTo(Constants.KEY_RECEIVER_ID, userId)
                 .addSnapshotListener(eventListener);
     }
-
     private void handleDocumentChanges(QuerySnapshot value, SecretKey key) {
         try {
             for (DocumentChange documentChange : value.getDocumentChanges()) {
@@ -222,35 +213,106 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             showToast("Error decrypting messages");
         }
     }
-
     @NonNull
-    private ChatMessages createChatMessage(@NonNull DocumentChange documentChange, SecretKey key) {
-        ChatMessages chatMessages = new ChatMessages();
-        String senderId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
-        String receiverId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
-        chatMessages.senderId = senderId;
-        chatMessages.receiverId = receiverId;
+    private ChatMessages createChatMessage(@NonNull DocumentChange dc, @NonNull SecretKey key) {
+        ChatMessages msg = new ChatMessages();
+
+        String senderId = dc.getDocument().getString(Constants.KEY_SENDER_ID);
+        String receiverId = dc.getDocument().getString(Constants.KEY_RECEIVER_ID);
+
+        msg.senderId = senderId;
+        msg.receiverId = receiverId;
 
         if (preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {
-            chatMessages.ConversionImage = documentChange.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
-            chatMessages.conversionName = documentChange.getDocument().getString(Constants.KEY_RECEIVER_NAME);
-            chatMessages.conversionId = documentChange.getDocument().getString(Constants.KEY_RECEIVER_ID);
+            msg.ConversionImage = dc.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
+            msg.conversionName = dc.getDocument().getString(Constants.KEY_RECEIVER_NAME);
+            msg.conversionId = dc.getDocument().getString(Constants.KEY_RECEIVER_ID);
         } else {
-            chatMessages.ConversionImage = documentChange.getDocument().getString(Constants.KEY_SENDER_IMAGE);
-            chatMessages.conversionName = documentChange.getDocument().getString(Constants.KEY_SENDER_NAME);
-            chatMessages.conversionId = documentChange.getDocument().getString(Constants.KEY_SENDER_ID);
+            msg.ConversionImage = dc.getDocument().getString(Constants.KEY_SENDER_IMAGE);
+            msg.conversionName = dc.getDocument().getString(Constants.KEY_SENDER_NAME);
+            msg.conversionId = dc.getDocument().getString(Constants.KEY_SENDER_ID);
         }
 
-        String encryptedMessage = documentChange.getDocument().getString(Constants.KEY_LAST_MESSAGE);
-        try {
-            chatMessages.message = EncryptionUtil.decrypt(encryptedMessage, key);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        chatMessages.dateObject = documentChange.getDocument().getDate(Constants.KEY_TIMESTAMP);
+        String lastMessage = dc.getDocument().getString(Constants.KEY_LAST_MESSAGE);
 
-        return chatMessages;
+        if (lastMessage == null || lastMessage.isEmpty()) {
+            msg.message = "Message unavailable";
+        }
+        else if (
+                lastMessage.equals("📷 Photo") ||
+                        lastMessage.equals("🎥 Video") ||
+                        lastMessage.equals("📄 File")
+        ) {
+            msg.message = lastMessage;
+        }
+        else {
+            try {
+                msg.message = EncryptionUtil.decrypt(lastMessage, key);
+            } catch (Exception e) {
+                msg.message = "Message unavailable";
+            }
+        }
+
+        msg.dateObject = dc.getDocument().getDate(Constants.KEY_TIMESTAMP);
+        msg.isRead = Boolean.TRUE.equals(dc.getDocument().getBoolean(Constants.IS_READ));
+
+        return msg;
     }
+
+//    @NonNull
+//    private ChatMessages createChatMessage(@NonNull DocumentChange dc, @NonNull SecretKey key) {
+//        ChatMessages msg = new ChatMessages();
+//
+//        String senderId = dc.getDocument().getString(Constants.KEY_SENDER_ID);
+//        String receiverId = dc.getDocument().getString(Constants.KEY_RECEIVER_ID);
+//
+//        msg.senderId = senderId;
+//        msg.receiverId = receiverId;
+//
+//        // 🔹 Name & Image
+//        if (preferenceManager.getString(Constants.KEY_USER_ID).equals(senderId)) {
+//            msg.ConversionImage = dc.getDocument().getString(Constants.KEY_RECEIVER_IMAGE);
+//            msg.conversionName = dc.getDocument().getString(Constants.KEY_RECEIVER_NAME);
+//            msg.conversionId = dc.getDocument().getString(Constants.KEY_RECEIVER_ID);
+//        } else {
+//            msg.ConversionImage = dc.getDocument().getString(Constants.KEY_SENDER_IMAGE);
+//            msg.conversionName = dc.getDocument().getString(Constants.KEY_SENDER_NAME);
+//            msg.conversionId = dc.getDocument().getString(Constants.KEY_SENDER_ID);
+//        }
+//
+//        String mediaName = dc.getDocument().getString(Constants.MEDIA_NAME);
+//        msg.mediaName = mediaName;
+//
+//        String lastMessage = dc.getDocument().getString(Constants.KEY_LAST_MESSAGE);
+//
+//        // 🔹 DECISION LOGIC
+//        if (lastMessage == null || lastMessage.isEmpty()) {
+//            msg.message = "Message unavailable";
+//        }
+//        // PHOTO / VIDEO PREVIEW
+//        else if ("📷 Photo".equals(lastMessage) || "🎥 Video".equals(lastMessage)) {
+//            msg.message = lastMessage;
+//        }
+//        // FILE NAME (PDF, DOC, etc.)
+//        else if (mediaName != null && lastMessage.equals(mediaName)) {
+//            msg.message = mediaName; // ✅ ORIGINAL FILE NAME
+//        }
+//        // TEXT MESSAGE (ENCRYPTED)
+//        else {
+//            try {
+//                msg.message = EncryptionUtil.decrypt(lastMessage, key);
+//            } catch (Exception e) {
+//                msg.message = "Message unavailable";
+//            }
+//        }
+//
+//        msg.dateObject = dc.getDocument().getDate(Constants.KEY_TIMESTAMP);
+//        msg.isRead = Boolean.TRUE.equals(dc.getDocument().getBoolean(Constants.IS_READ));
+//
+//        return msg;
+//    }
+
+
 
     private void updateConversationList(ChatMessages chatMessages, @NonNull DocumentChange documentChange) {
         if (documentChange.getType() == DocumentChange.Type.ADDED) {
@@ -266,7 +328,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             }
         }
     }
-
     private void refreshConversationList() {
         Collections.sort(conversations, (obj1, obj2) -> obj2.dateObject.compareTo(obj1.dateObject));
         conversationAdapter.notifyDataSetChanged();
@@ -274,7 +335,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
         binding.conversationRecyclerView.setVisibility(View.VISIBLE);
         binding.progressBar.setVisibility(View.GONE);
     }
-
     private void fetchToken() {
         FirebaseMessaging.getInstance().getToken().addOnSuccessListener(this::updateToken)
                 .addOnFailureListener(e -> showToast("Failed to fetch token: " + e.getMessage()));
@@ -297,8 +357,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
                         Log.e("ID_TOKEN", "Failed to get token", e)
                 );
     }
-
-
     private void updateToken(String token) {
         String userId = preferenceManager.getString(Constants.KEY_USER_ID);
         if (userId != null && !userId.isEmpty()) {
@@ -310,7 +368,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             showToast("User ID is not available, unable to update token");
         }
     }
-
     private void signOut() {
         showToast("Signing out...");
         String userId = preferenceManager.getString(Constants.KEY_USER_ID);
@@ -332,7 +389,6 @@ public class MainActivity extends BaseActivity implements ConversionListener {
             finish();
         }
     }
-
     @Override
     public void onConversionClicked(Users user) {
         Intent intent = new Intent(getApplicationContext(), ChatActivity.class);

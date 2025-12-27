@@ -2,6 +2,7 @@ package com.example.streamchat.adapter;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -44,6 +45,9 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         holder.setData(chatMessages.get(position));
     }
 
+
+
+
     @Override
     public int getItemCount() {
         return chatMessages.size();
@@ -59,12 +63,17 @@ public class RecentConversationAdapter extends RecyclerView.Adapter<RecentConver
         }
 
         void setData(ChatMessages chatMessages) {
-
             // SAFE IMAGE DECODE
             binding.imgProfile.setImageBitmap(safeDecodeImage(chatMessages.ConversionImage));
 
             binding.txtName.setText(chatMessages.conversionName);
             binding.txtRecentMessage.setText(chatMessages.message);
+
+            if (!chatMessages.isRead){
+                binding.txtRecentMessage.setTypeface(null, Typeface.BOLD);
+            }else{
+                binding.txtRecentMessage.setTypeface(null, Typeface.NORMAL);
+            }
 
             binding.getRoot().setOnClickListener(view -> {
                 Users user = new Users();

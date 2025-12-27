@@ -95,6 +95,7 @@
             android:background="@drawable/background_input"
             android:drawableStart="@drawable/lock"
             android:drawablePadding="16dp"
+            android:singleLine="true"
             android:hint="@string/password"
             android:inputType="textPassword"
             android:paddingStart="16dp"

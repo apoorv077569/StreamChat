@@ -1,13 +1,16 @@
 package com.example.streamchat.adapter;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +21,8 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.example.streamchat.activities.ImageViewerActivity;
+import com.example.streamchat.activities.PdfViewerActivity;
 import com.example.streamchat.databinding.LayoutSentMessageBinding;
 import com.example.streamchat.databinding.ReceivedMessagesBinding;
 import com.example.streamchat.modals.ChatMessages;
@@ -99,22 +104,18 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             binding = messageBinding;
 
         }
-
-//        void setData(@NonNull ChatMessages chatMessages) {
-//            binding.txtMessage.setText(chatMessages.message);
-//            binding.txtDateTime.setText(chatMessages.dateTime);
-//        }
-
         void setData(@NonNull ChatMessages chatMessages) {
 
             // RESET VISIBILITY (VERY IMPORTANT)
             binding.txtMessage.setVisibility(View.GONE);
             binding.imgMedia.setVisibility(View.GONE);
             binding.layoutFile.setVisibility(View.GONE);
+            binding.progressMessage.setVisibility(View.VISIBLE);
 
             Log.d("MEDIA_DEBUG", "----- setData() called -----");
             Log.d("MEDIA_DEBUG", "Type      : " + chatMessages.type);
             Log.d("MEDIA_DEBUG", "MediaType : " + chatMessages.mediaType);
+            Log.d("MEDIA_DEBUG", "MediaName : " + chatMessages.mediaName);
             Log.d("MEDIA_DEBUG", "MediaUrl  : " + chatMessages.mediaUrl);
 
             // =========================
@@ -146,6 +147,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                                     if (e != null) {
                                         Log.e("MEDIA_DEBUG", "Exception:", e);
                                     }
+                                    binding.progressMessage.setVisibility(View.GONE);
                                     return false;
                                 }
 
@@ -159,25 +161,56 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
                                     Log.d("MEDIA_DEBUG", "✅ IMAGE LOAD SUCCESS");
                                     Log.d("MEDIA_DEBUG", "Source: " + dataSource);
+                                    binding.progressMessage.setVisibility(View.GONE);
                                     return false;
                                 }
                             })
                             .into(binding.imgMedia);
-
-                }
-                // FILE (PDF / DOC / ZIP)
-                else {
-
-                    binding.layoutFile.setVisibility(View.VISIBLE);
-                    binding.txtFileName.setText("Open File");
-
-                    Log.d("MEDIA_DEBUG", "Showing FILE layout");
-
-                    binding.layoutFile.setOnClickListener(v -> {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(chatMessages.mediaUrl));
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    binding.imgMedia.setOnClickListener( v-> {
+                        Intent intent = new Intent(v.getContext(), ImageViewerActivity.class);
+                        intent.putExtra(ImageViewerActivity.EXTRA_IMAGE_URL,chatMessages.mediaUrl);
                         v.getContext().startActivity(intent);
+                    });
+                }
+                else {
+                    binding.layoutFile.setVisibility(View.VISIBLE);
+                    binding.txtFileName.setText(chatMessages.mediaName);
+                    Log.d("MEDIA_DEBUG", "Showing FILE layout");
+                    binding.progressMessage.setVisibility(View.GONE);
+                    binding.layoutFile.setOnClickListener(v -> {
+                        Context context = v.getContext();
+                        Intent intent;
+
+                        if (chatMessages.mediaType != null &&
+                                chatMessages.mediaType.equals("application/pdf")) {
+                            // Open PDF in your custom viewer
+                            intent = new Intent(context, PdfViewerActivity.class);
+                            intent.putExtra(
+                                    PdfViewerActivity.EXTRA_PDF_URL,
+                                    chatMessages.mediaUrl
+                            );
+                        }
+                        else {
+                            // Open other files in default app
+                            intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setDataAndType(Uri.parse(chatMessages.mediaUrl), chatMessages.mediaType);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                            // Check if there's an app that can handle this file type
+                            if (intent.resolveActivity(context.getPackageManager()) == null) {
+                                // No app found, show error
+                                Toast.makeText(context, "No app found to open this file", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                        }
+
+                        try {
+                            context.startActivity(intent);
+                        } catch (Exception e) {
+                            Toast.makeText(context, "Unable to open file", Toast.LENGTH_SHORT).show();
+                            e.printStackTrace();
+                        }
                     });
                 }
 
@@ -191,6 +224,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 binding.txtMessage.setText(chatMessages.message);
 
                 Log.d("MEDIA_DEBUG", "Showing TEXT message");
+                binding.progressMessage.setVisibility(View.GONE);
             }
 
             // DATE TIME (ALWAYS AT BOTTOM)
@@ -205,15 +239,6 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             super(receivedMessagesBinding.getRoot());
             binding = receivedMessagesBinding;
         }
-
-//        void setData(@NonNull ChatMessages chatMessages, Bitmap receiverProfileImage) {
-//            binding.txtMessage.setText(chatMessages.message);
-//            binding.txtDateTime.setText(chatMessages.dateTime);
-//            if (receiverProfileImage != null) {
-//                binding.imgProfile.setImageBitmap(receiverProfileImage);
-//            }
-//        }
-
         void setData(@NonNull ChatMessages chatMessages, Bitmap receiverProfileImage) {
             binding.txtMessage.setVisibility(View.INVISIBLE);
             binding.imgMedia.setVisibility(View.GONE);
@@ -222,6 +247,11 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 binding.txtMessage.setVisibility(View.VISIBLE);
                 binding.txtMessage.setText(chatMessages.message);
                 binding.txtDateTime.setText(chatMessages.dateTime);
+                if (!chatMessages.isRead){
+                    binding.txtMessage.setTypeface(null, Typeface.BOLD);
+                }else{
+                    binding.txtMessage.setTypeface(null,Typeface.NORMAL);
+                }
             }else{
                 if (chatMessages.mediaType != null && chatMessages.mediaType.startsWith("image")){
                     binding.imgMedia.setVisibility(View.VISIBLE);
@@ -231,7 +261,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                             .into(binding.imgMedia);
                 }else{
                     binding.txtMessage.setVisibility(View.VISIBLE);
-                    binding.txtMessage.setText("Open File");
+                    binding.txtMessage.setText(chatMessages.mediaName);
 
                     binding.txtMessage.setOnClickListener( v->{
                         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -239,6 +269,12 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         binding.getRoot().getContext().startActivity(intent);
                     });
+                    binding.imgMedia.setOnClickListener( v-> {
+                        Intent intent = new Intent(v.getContext(), ImageViewerActivity.class);
+                        intent.putExtra(ImageViewerActivity.EXTRA_IMAGE_URL,chatMessages.mediaUrl);
+                        v.getContext().startActivity(intent);
+                    });
+
                 }
                 binding.txtDateTime.setText(chatMessages.dateTime);
             }

@@ -4,16 +4,21 @@ public class MediaResponse {
     public String mediaId;
     public String mediaType;
     public String mediaUrl;
+    public String mediaName;
 
     public String getMediaId() {
-        return this.mediaId;
+        return mediaId;
     }
 
     public String getMediaType() {
-        return this.mediaType;
+        return mediaType;
     }
 
     public String getMediaUrl() {
-        return this.mediaUrl;
+        return mediaUrl;
     }
+    public String getMediaName(){
+        return mediaName;
+    }
+
 }

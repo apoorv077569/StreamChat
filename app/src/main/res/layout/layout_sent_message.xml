@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth_percent="0.75">
         <ProgressBar
-            android:id="@+id/progressMedia"
+            android:id="@+id/progressMessage"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center"

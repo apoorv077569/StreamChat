@@ -32,6 +32,8 @@ public class Constants {
     public static final String TYPE = "type";
     public static final String MEDIA_URL = "mediaUrl";
     public static final String MEDIA = "media";
+    public static final String MEDIA_NAME = "mediaName";
+    public static final String IS_READ = "isRead";
 
 
 }
